@@ -24,3 +24,26 @@
 - Frontend: HTML/CSS, JavaScript
 - Backend: Flask
 - Database: MySQL
+
+Jenkins pipeline configure
+    pipeline {
+        agent any
+    
+        stages {
+            stage('Hello') {
+                steps {
+                    git branch: 'main',
+                    url: 'https://github.com/kietdz0505/QuanLyDuAn.git/'
+                }
+            }
+            stage('venv') {
+                steps {
+                     bat 'python -m venv venv'
+                     bat 'call venv/Scripts/activate.bat'
+                     bat 'pip install --upgrade pip'
+                     bat 'pip install -r ThuVienOU/requirements.txt'
+                     
+                }
+            }
+        }
+    }
