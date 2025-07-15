@@ -68,18 +68,18 @@ class CategoryModelView(BaseModelView):
 
 class BookModelView(BaseModelView):
     column_list = ['id', 'name', 'price', 'quantity', 'category', 'author', 'publisher', 'active', 'created_date']
-    column_filters = ['price', 'active', 'created_date', 'category']
+    column_filters = ['price', 'active', 'created_date', 'category_id']
     column_searchable_list = ['name', 'description']
     form_excluded_columns = ['borrowrequest']
-    form_columns = ['name', 'description', 'price', 'quantity', 'category', 'author', 'publisher', 'image', 'active']
+    form_columns = ['name', 'description', 'price', 'quantity', 'category_id', 'author_id', 'publisher_id', 'image', 'active']
     column_labels = {
         'name': 'Tên sách',
         'description': 'Mô tả',
         'price': 'Giá',
         'quantity': 'Số lượng',
-        'category': 'Danh mục',
-        'author': 'Tác giả',
-        'publisher': 'Nhà xuất bản',
+        'category_id': 'Danh mục',
+        'author_id': 'Tác giả',
+        'publisher_id': 'Nhà xuất bản',
         'active': 'Trạng thái',
         'created_date': 'Ngày tạo',
         'image': 'Hình ảnh'
@@ -101,7 +101,7 @@ class BookModelView(BaseModelView):
 class BorrowRequestModelView(BaseModelView):
     column_list = ['id', 'user', 'book', 'request_date', 'status', 'return_date']
     column_filters = ['status', 'request_date']
-    form_columns = ['user', 'book', 'status', 'return_date']
+    form_columns = ['user_id', 'book_id', 'status', 'return_date']
     column_labels = {
         'user': 'Người mượn',
         'book': 'Sách',

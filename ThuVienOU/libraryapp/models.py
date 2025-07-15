@@ -28,7 +28,6 @@ class User(BaseModel, UserMixin):
         return self.name
 
 class Author(BaseModel):
-
     first_name = Column(String(15), nullable=False)
     last_name = Column(String(50), nullable=False)
     books = relationship('Book', backref='author', lazy=True)
@@ -37,7 +36,6 @@ class Author(BaseModel):
         return self.first_name + ' '+ self.last_name
 
 class Publisher(BaseModel):
-
     name = Column(String(50), nullable=False, unique=True)
     books = relationship('Book', backref='publisher', lazy=True)
 
@@ -52,7 +50,6 @@ class Category(BaseModel):
         return self.name
 
 class Book(BaseModel):
-
     name = Column(Text, nullable=False)
     description = Column(Text, nullable=True)
     price = Column(Float, default=0)

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng ký - Thư viện{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white text-center py-3">
+                    <h3 class="mb-0"><i class="fas fa-user-plus"></i> Đăng ký</h3>
+                    <small>Tạo tài khoản để sử dụng thư viện</small>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" id="registerForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label><i class="fas fa-id-card"></i> Họ và tên *</label>
+                                <input type="text" class="form-control" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label><i class="fas fa-user"></i> Tên đăng nhập *</label>
+                                <input type="text" class="form-control" name="username" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label><i class="fas fa-envelope"></i> Email *</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label><i class="fas fa-lock"></i> Mật khẩu *</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" name="password" id="password" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">Ít nhất 6 ký tự</small>
+                        </div>
+                        <div class="mb-3">
+                            <label><i class="fas fa-lock"></i> Xác nhận mật khẩu *</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" name="confirmPassword" id="confirmPassword" required>
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                Tôi đồng ý với <a href="#">điều khoản</a> và <a href="#">bảo mật</a>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-user-plus"></i> Đăng ký
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    Đã có tài khoản? <a href="{{ url_for('login') }}">Đăng nhập</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

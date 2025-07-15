@@ -1,10 +1,233 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Flask App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <h1>Chào mừng đến với Flask!</h1>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Trang chủ - Thư viện{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Chào mừng đến với Thư viện</h1>
+                <p class="lead mb-4">Khám phá thế giới tri thức với hàng ngàn cuốn sách đa dạng. Tìm kiếm, mượn sách dễ dàng chỉ với vài click chuột.</p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('search') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-search"></i> Tìm kiếm sách
+                    </a>
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus"></i> Đăng ký ngay
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=300&fit=crop" 
+                     alt="Library" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Search Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="search-form">
+                    <h3 class="text-center mb-4">Tìm kiếm nhanh</h3>
+                    <form action="{{ url_for('search') }}" method="GET">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <input type="text" name="keyword" class="form-control form-control-lg" 
+                                       placeholder="Nhập tên sách, tác giả...">
+                            </div>
+                            <div class="col-md-4">
+                                <select name="category_id" class="form-select form-select-lg">
+                                    <option value="">Tất cả danh mục</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-book fa-3x text-primary mb-3"></i>
+                        <h4>{{ books|length }}+</h4>
+                        <p class="text-muted">Sách mới nhất</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-list fa-3x text-success mb-3"></i>
+                        <h4>{{ categories|length }}</h4>
+                        <p class="text-muted">Danh mục</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-3x text-info mb-3"></i>
+                        <h4>1000+</h4>
+                        <p class="text-muted">Thành viên</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                        <h4>24/7</h4>
+                        <p class="text-muted">Mở cửa</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- New Books Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-5">
+                    <i class="fas fa-star text-warning"></i>
+                    Sách mới nhất
+                </h2>
+            </div>
+        </div>
+        
+        {% if books %}
+        <div class="row">
+            {% for book in books %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card book-card h-100">
+                    <div class="position-relative">
+                        <img src="{{ book.image if book.image else 'https://via.placeholder.com/250x300/f8f9fa/6c757d?text=No+Image' }}" 
+                             class="card-img-top book-image" alt="{{ book.name }}">
+                        {% if book.quantity > 0 %}
+                            <span class="badge bg-success status-badge">Còn hàng</span>
+                        {% else %}
+                            <span class="badge bg-danger status-badge">Hết hàng</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ book.name }}</h5>
+                        <p class="card-text text-muted small mb-2">
+                            <i class="fas fa-user"></i> {{ book.author }}
+                        </p>
+                        <p class="card-text text-muted small mb-2">
+                            <i class="fas fa-tags"></i> {{ book.category.name }}
+                        </p>
+                        <p class="card-text small flex-grow-1">
+                            {{ book.description[:100] }}...
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <span class="price">{{ "{:,.0f}".format(book.price) }} VND</span>
+                            <div class="btn-group">
+                                <a href="{{ url_for('book_detail', book_id=book.id) }}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i> Xem
+                                </a>
+                                {% if current_user.is_authenticated and book.quantity > 0 %}
+                                <form action="{{ url_for('borrow_book', book_id=book.id) }}" 
+                                      method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-bookmark"></i> Mượn
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('search') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-th-large"></i> Xem tất cả sách
+            </a>
+        </div>
+        {% else %}
+        <div class="text-center">
+            <img src="https://via.placeholder.com/300x200/f8f9fa/6c757d?text=No+Books" 
+                 alt="No books" class="mb-3">
+            <h4>Chưa có sách nào</h4>
+            <p class="text-muted">Hệ thống đang được cập nhật thêm sách mới.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-5">
+                    <i class="fas fa-list text-primary"></i>
+                    Danh mục sách
+                </h2>
+            </div>
+        </div>
+        
+        {% if categories %}
+        <div class="row">
+            {% for category in categories %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                <a href="{{ url_for('search', category_id=category.id) }}" 
+                   class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-folder fa-2x text-primary mb-3"></i>
+                            <h5 class="card-title">{{ category.name }}</h5>
+                            <p class="card-text text-muted small">
+                                {{ category.books|length }} cuốn sách
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Call to Action -->
+{% if not current_user.is_authenticated %}
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="mb-4">Tham gia ngay hôm nay!</h2>
+        <p class="lead mb-4">Đăng ký tài khoản để mượn sách và trải nghiệm đầy đủ các tính năng</p>
+        <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+            <i class="fas fa-user-plus"></i> Đăng ký miễn phí
+        </a>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
