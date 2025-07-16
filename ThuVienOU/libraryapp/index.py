@@ -31,6 +31,45 @@ def index():
     return render_template('index.html', books=books, categories=categories)
 
 
+@app.route('/admin')
+@login_required
+def admin_dashboard():
+    if current_user.user_role != UserRole.ADMIN:
+        flash('Bạn không có quyền truy cập trang này.', 'error')
+        return redirect(url_for('index'))
+
+    # Lấy dữ liệu thống kê
+    total_books = Book.query.count()
+    total_users = User.query.count()
+    pending_requests = BorrowRequest.query.filter_by(status='pending').count()
+    borrowed_books = BorrowRequest.query.filter_by(status='approved').count()
+
+    # Yêu cầu mượn gần đây
+    recent_requests = BorrowRequest.query.order_by(BorrowRequest.request_date.desc()).limit(10).all()
+
+    return render_template('admin.html',
+                           total_books=total_books,
+                           total_users=total_users,
+                           pending_requests=pending_requests,
+                           borrowed_books=borrowed_books,
+                           recent_requests=recent_requests)
+
+
+@app.route('/admin/update-request-status/<int:request_id>', methods=['POST'])
+@login_required
+def update_request_status(request_id):
+    if current_user.user_role != UserRole.ADMIN:
+        return {'success': False, 'message': 'Không có quyền truy cập'}
+
+    borrow_request = BorrowRequest.query.get_or_404(request_id)
+    data = request.get_json()
+
+    borrow_request.status = data['status']
+    db.session.commit()
+
+    return {'success': True, 'message': 'Cập nhật thành công'}
+
+
 # Route đăng nhập
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -48,12 +87,21 @@ def login():
             login_user(user)
             flash(f'Chào mừng {user.name}!', 'success')
 
-            # Chuyển hướng về trang được yêu cầu hoặc trang chủ
+            # Chuyển hướng về trang được yêu cầu hoặc trang mặc định
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('index'))
+            if next_page:
+                return redirect(next_page)
+            else:
+                # Nếu là admin, chuyển về Flask-Admin
+                if user.user_role == UserRole.ADMIN:
+                    return redirect('/admin/')  # Flask-Admin URL
+                else:
+                    return redirect(url_for('index'))
         else:
             flash('Tên đăng nhập hoặc mật khẩu không đúng!', 'error')
+            return render_template('login.html')
 
+    # Xử lý GET request - hiển thị form đăng nhập
     return render_template('login.html')
 
 
@@ -175,7 +223,6 @@ def my_borrows():
     borrows = BorrowRequest.query.filter_by(user_id=current_user.id) \
         .order_by(BorrowRequest.request_date.desc()).all()
     return render_template('my_borrows.html', borrows=borrows)
-
 
 
 if __name__ == '__main__':
