@@ -1,0 +1,22 @@
+[
+	{
+		"name" : "Giáo dục",
+		"id" : 2
+	},
+	{
+		"name" : "Sách Khoa Học",
+		"id" : 4
+	},
+	{
+		"name" : "Tâm lý",
+		"id" : 6
+	},
+	{
+		"name" : "Tiểu thuyết",
+		"id" : 3
+	},
+	{
+		"name" : "Truyện tranh",
+		"id" : 1
+	}
+]
