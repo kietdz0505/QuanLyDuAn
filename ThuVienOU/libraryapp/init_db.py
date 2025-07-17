@@ -1,20 +1,18 @@
-from libraryapp import app, db
+from werkzeug.security import generate_password_hash
+from libraryapp import create_app
+from libraryapp.extensions import db
 from libraryapp.models import User, UserRole
-import hashlib
 
-# Hàm mã hóa password
 def hash_password(password):
-    return hashlib.md5(password.encode()).hexdigest()
+    return generate_password_hash(password)
 
 def create_tables():
     db.create_all()
-
-    # Tạo admin mặc định nếu chưa có
     if not User.query.filter_by(username='admin').first():
         admin_user = User(
             name='Administrator',
             username='admin',
-            password=hash_password('admin123'),
+            password=hash_password('admin123'),  # Đảm bảo đã dùng scrypt
             email='admin@gmail.com',
             user_role=UserRole.ADMIN
         )
@@ -22,6 +20,8 @@ def create_tables():
         db.session.commit()
         print("✅ Đã tạo tài khoản admin: admin / admin123")
 
+
 if __name__ == '__main__':
+    app = create_app()
     with app.app_context():
         create_tables()

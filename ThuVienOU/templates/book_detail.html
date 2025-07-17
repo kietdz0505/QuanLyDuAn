@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Chi tiết sách{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Ảnh sách nếu có -->
+            <div class="col-md-4">
+                {% if book.image %}
+                    <img src="{{book.image}}" alt="{{ book.name }}" class="img-fluid rounded shadow">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/default-book.png') }}" alt="No image" class="img-fluid rounded shadow">
+                {% endif %}
+            </div>
+
+            <!-- Thông tin sách -->
+            <div class="col-md-8">
+                <h2 class="mb-3">{{ book.name }}</h2>
+                <p><strong>Tác giả:</strong> {{ book.author.name if book.author else 'Không rõ' }}</p>
+                <p><strong>Thể loại:</strong> {{ book.category.name if book.category else 'Không rõ' }}</p>
+                <p><strong>Nhà xuất bản:</strong> {{ book.publisher.name if book.publisher else 'Không rõ' }}</p>
+                <p><strong>Năm xuất bản:</strong> {{ book.published_year or 'Không rõ' }}</p>
+                <p><strong>Số lượng còn lại:</strong> {{ book.stock_quantity or '0' }}</p>
+
+                <hr>
+                <p><strong>Mô tả:</strong></p>
+                <p>{{ book.description or 'Chưa có mô tả.' }}</p>
+
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('borrow_request', book_id=book.id) }}" class="btn btn-success mt-3">
+                        <i class="fas fa-book-reader"></i> Yêu cầu mượn sách
+                    </a>
+                {% else %}
+                    <p class="text-muted mt-3">Vui lòng <a href="{{ url_for('login') }}">đăng nhập</a> để mượn sách.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Boolean, Enum, ForeignKey, Integer, String, Float, DateTime, Text
 from sqlalchemy.orm import relationship, backref
-from libraryapp import db, app
+from libraryapp import db
 from datetime import datetime
 from flask_login import UserMixin
 from enum import Enum as UserEnum
@@ -16,7 +16,7 @@ class UserRole(UserEnum):
 class User(BaseModel, UserMixin):
     name = Column(String(50), nullable=False)
     username = Column(String(50), nullable=False, unique=True)
-    password = Column(String(50), nullable=False)
+    password = Column(String(255), nullable=False)
     avatar = Column(String(100))
     email = Column(String(50))
     active = Column(Boolean, default=True)

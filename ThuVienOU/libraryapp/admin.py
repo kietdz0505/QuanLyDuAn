@@ -1,9 +1,9 @@
-from flask_admin import Admin, AdminIndexView, expose
+from flask_admin import Admin, AdminIndexView, expose, BaseView
 from flask_admin.contrib.sqla import ModelView
 from libraryapp import app, db
 from libraryapp.models import User, Author, Publisher, Category, Book, BorrowRequest, UserRole
 from wtforms import IntegerField
-from flask_login import current_user
+from flask_login import current_user, logout_user
 from flask import redirect, url_for, request, flash
 
 
@@ -97,6 +97,14 @@ class BookModelView(BaseModelView):
         'quantity': IntegerField
     }
 
+class LogoutView(BaseView):
+    @expose('/')
+    def index(self):
+        logout_user()
+        return redirect('/admin')
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.user_role == UserRole.ADMIN
 
 class BorrowRequestModelView(BaseModelView):
     column_list = ['id', 'user', 'book', 'request_date', 'status', 'return_date']
@@ -138,3 +146,4 @@ admin.add_view(PublisherModelView(Publisher, db.session, name='Nhà xuất bản
 admin.add_view(CategoryModelView(Category, db.session, name='Danh mục'))
 admin.add_view(BookModelView(Book, db.session, name='Sách'))
 admin.add_view(BorrowRequestModelView(BorrowRequest, db.session, name='Yêu cầu mượn sách'))
+admin.add_view(LogoutView(name='Đăng xuất'))
