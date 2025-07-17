@@ -12,7 +12,7 @@
                     <small>Tạo tài khoản để sử dụng thư viện</small>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" id="registerForm">
+                    <form method="POST" enctype="multipart/form-data" id ="registerForm">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label><i class="fas fa-id-card"></i> Họ và tên *</label>
@@ -31,7 +31,8 @@
                             <label><i class="fas fa-lock"></i> Mật khẩu *</label>
                             <div class="input-group">
                                 <input type="password" class="form-control" name="password" id="password" required>
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password')">
+                                <button class="btn btn-outline-secondary" type="button"
+                                        onclick="togglePassword('password')">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
@@ -40,12 +41,21 @@
                         <div class="mb-3">
                             <label><i class="fas fa-lock"></i> Xác nhận mật khẩu *</label>
                             <div class="input-group">
-                                <input type="password" class="form-control" name="confirmPassword" id="confirmPassword" required>
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword')">
+                                <input type="password" class="form-control" name="confirmPassword" id="confirmPassword"
+                                       required>
+                                <button class="btn btn-outline-secondary" type="button"
+                                        onclick="togglePassword('confirmPassword')">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
                         </div>
+                        <div class="mb-3">
+                             <label><i class="fas fa-avatar"></i> Chọn ảnh đại diện</label>
+                             <div class="input-group">
+                                 <input type="file" name="avatar">
+                             </div>
+                        </div>
+
                         <div class="form-check mb-4">
                             <input class="form-check-input" type="checkbox" id="terms" required>
                             <label class="form-check-label" for="terms">

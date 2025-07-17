@@ -1,5 +1,8 @@
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from libraryapp import app, db
 from libraryapp.models import User, UserRole, Book, Category, Author, Publisher, BorrowRequest
 from libraryapp.admin import admin  # Import admin để kích hoạt
@@ -19,7 +22,7 @@ def load_user(user_id):
 
 # Hàm mã hóa password (đơn giản)
 def hash_password(password):
-    return hashlib.md5(password.encode()).hexdigest()
+    return generate_password_hash(password)
 
 
 # Route trang chủ
@@ -76,32 +79,24 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        remember = True if 'remember' in request.form else False
 
-        # Mã hóa password để so sánh
-        hashed_password = hash_password(password)
+        user = User.query.filter_by(username=username, active=True).first()
 
-        # Tìm user trong database
-        user = User.query.filter_by(username=username, password=hashed_password, active=True).first()
-
-        if user:
-            login_user(user)
+        if user and check_password_hash(user.password, password):
+            login_user(user, remember=remember)
             flash(f'Chào mừng {user.name}!', 'success')
 
-            # Chuyển hướng về trang được yêu cầu hoặc trang mặc định
             next_page = request.args.get('next')
             if next_page:
                 return redirect(next_page)
+            elif user.user_role == UserRole.ADMIN:
+                return redirect('/admin/')
             else:
-                # Nếu là admin, chuyển về Flask-Admin
-                if user.user_role == UserRole.ADMIN:
-                    return redirect('/admin/')  # Flask-Admin URL
-                else:
-                    return redirect(url_for('index'))
+                return redirect(url_for('index'))
         else:
             flash('Tên đăng nhập hoặc mật khẩu không đúng!', 'error')
-            return render_template('login.html')
 
-    # Xử lý GET request - hiển thị form đăng nhập
     return render_template('login.html')
 
 
@@ -113,6 +108,9 @@ def logout():
     flash('Đã đăng xuất thành công!', 'info')
     return redirect(url_for('index'))
 
+import cloudinary
+import cloudinary.uploader
+
 
 # Route đăng ký
 @app.route('/register', methods=['GET', 'POST'])
@@ -122,6 +120,12 @@ def register():
         username = request.form['username']
         password = request.form['password']
         email = request.form['email']
+        file = request.files.get('avatar')  # <-- Sửa ở đây
+
+        avatar_url = None
+        if file and file.filename:
+            upload_result = cloudinary.uploader.upload(file)
+            avatar_url = upload_result["secure_url"]
 
         # Kiểm tra username đã tồn tại
         if User.query.filter_by(username=username).first():
@@ -140,7 +144,8 @@ def register():
             username=username,
             password=hashed_password,
             email=email,
-            user_role=UserRole.USER
+            user_role=UserRole.USER,
+            avatar=avatar_url  # Có thể là None
         )
 
         db.session.add(new_user)
@@ -150,6 +155,7 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html')
+
 
 
 # Route tìm kiếm sách
@@ -169,7 +175,7 @@ def search():
     books = query.all()
     categories = Category.query.all()
 
-    return render_template('search.html', books=books, categories=categories,
+    return render_template('index.html', books=books, categories=categories,
                            keyword=keyword, selected_category=category_id)
 
 
