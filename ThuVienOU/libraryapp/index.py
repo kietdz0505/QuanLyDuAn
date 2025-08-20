@@ -8,6 +8,7 @@ from libraryapp import app, db
 from libraryapp.models import User, UserRole, Book, Category, Author, Publisher, BorrowRequest
 from libraryapp.admin import admin  # Import admin để kích hoạt
 import hashlib
+from datetime import datetime
 
 # Cấu hình Flask-Login
 login_manager = LoginManager()
@@ -68,7 +69,28 @@ def update_request_status(request_id):
     borrow_request = BorrowRequest.query.get_or_404(request_id)
     data = request.get_json()
 
-    borrow_request.status = data['status']
+    old_status = borrow_request.status
+    new_status = data['status']
+
+    # Nếu duyệt yêu cầu, giảm số lượng sách
+    if old_status == 'pending' and new_status == 'approved':
+        book = borrow_request.book
+        if book.quantity <= 0:
+            return {'success': False, 'message': 'Sách đã hết, không thể duyệt'}
+        book.quantity -= 1
+
+    # Nếu admin đánh dấu đã trả sách, tăng lại số lượng
+    elif old_status == 'approved' and new_status == 'returned':
+        book = borrow_request.book
+        book.quantity += 1
+        borrow_request.return_date = datetime.now()
+
+    # Nếu từ duyệt về pending hoặc rejected, tăng lại số lượng
+    elif old_status == 'approved' and new_status in ['pending', 'rejected']:
+        book = borrow_request.book
+        book.quantity += 1
+
+    borrow_request.status = new_status
     db.session.commit()
 
     return {'success': True, 'message': 'Cập nhật thành công'}
