@@ -1,6 +1,7 @@
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from sqlalchemy import func, or_
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from libraryapp import app, db
@@ -164,20 +165,29 @@ def search():
     keyword = request.args.get('keyword', '')
     category_id = request.args.get('category_id', '')
 
-    query = Book.query.filter_by(active=True)
+    # Tìm kiếm theo tên sách hoặc tên tác giả
+    query = Book.query.filter(Book.active == True)
 
     if keyword:
-        query = query.filter(Book.name.contains(keyword))
+        # join với bảng Author để có thể lọc theo tên tác giả
+        query = query.join(Book.author).filter(
+            or_(
+                Book.name.ilike(f'%{keyword}%'),
+                Author.first_name.ilike(f'%{keyword}%'),
+                Author.last_name.ilike(f'%{keyword}%'),
+                func.concat(Author.first_name, ' ', Author.last_name).ilike(f'%{keyword}%')
+
+            )
+        )
 
     if category_id:
-        query = query.filter_by(category_id=category_id)
+        query = query.filter(Book.category_id == category_id)
 
     books = query.all()
     categories = Category.query.all()
 
     return render_template('index.html', books=books, categories=categories,
                            keyword=keyword, selected_category=category_id)
-
 
 # Route chi tiết sách
 @app.route('/book/<int:book_id>')
