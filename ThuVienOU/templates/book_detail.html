@@ -18,20 +18,27 @@
             <!-- Thông tin sách -->
             <div class="col-md-8">
                 <h2 class="mb-3">{{ book.name }}</h2>
-                <p><strong>Tác giả:</strong> {{ book.author.name if book.author else 'Không rõ' }}</p>
+                <p><strong>Tác giả:</strong> {{ book.author.first_name }} {{ book.author.last_name if book.author else 'Không rõ' }}</p>
                 <p><strong>Thể loại:</strong> {{ book.category.name if book.category else 'Không rõ' }}</p>
                 <p><strong>Nhà xuất bản:</strong> {{ book.publisher.name if book.publisher else 'Không rõ' }}</p>
-                <p><strong>Năm xuất bản:</strong> {{ book.published_year or 'Không rõ' }}</p>
-                <p><strong>Số lượng còn lại:</strong> {{ book.stock_quantity or '0' }}</p>
+                <p><strong>Số lượng còn lại:</strong> {{ book.quantity }}</p>
 
                 <hr>
                 <p><strong>Mô tả:</strong></p>
                 <p>{{ book.description or 'Chưa có mô tả.' }}</p>
 
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('borrow_request', book_id=book.id) }}" class="btn btn-success mt-3">
-                        <i class="fas fa-book-reader"></i> Yêu cầu mượn sách
-                    </a>
+                    {% if book.quantity > 0 %}
+                        <form method="POST" action="{{ url_for('borrow_book', book_id=book.id) }}" class="mt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-book-reader"></i> Yêu cầu mượn sách
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle"></i> Sách đã hết, không thể mượn.
+                        </div>
+                    {% endif %}
                 {% else %}
                     <p class="text-muted mt-3">Vui lòng <a href="{{ url_for('login') }}">đăng nhập</a> để mượn sách.</p>
                 {% endif %}

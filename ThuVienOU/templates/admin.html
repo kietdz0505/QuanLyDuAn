@@ -169,18 +169,37 @@
                                                 <span class="badge bg-success">Đã duyệt</span>
                                             {% elif request.status == 'rejected' %}
                                                 <span class="badge bg-danger">Từ chối</span>
+                                            {% elif request.status == 'returned' %}
+                                                <span class="badge bg-info">Đã trả</span>
                                             {% endif %}
                                         </td>
                                         <td>
                                             {% if request.status == 'pending' %}
                                                 <div class="btn-group btn-group-sm">
-                                                    <button class="btn btn-success" onclick="updateRequestStatus({{ request.id }}, 'approved')">
+                                                    <button class="btn btn-success" onclick="updateRequestStatus({{ request.id }}, 'approved')" title="Duyệt yêu cầu">
                                                         <i class="fas fa-check"></i>
                                                     </button>
-                                                    <button class="btn btn-danger" onclick="updateRequestStatus({{ request.id }}, 'rejected')">
+                                                    <button class="btn btn-danger" onclick="updateRequestStatus({{ request.id }}, 'rejected')" title="Từ chối yêu cầu">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </div>
+                                            {% elif request.status == 'approved' %}
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-info" onclick="updateRequestStatus({{ request.id }}, 'returned')" title="Đánh dấu đã trả sách">
+                                                        <i class="fas fa-undo"></i> Đã trả
+                                                    </button>
+                                                </div>
+                                            {% elif request.status == 'returned' %}
+                                                <small class="text-muted">
+                                                    <i class="fas fa-check-circle"></i> Hoàn tất
+                                                    {% if request.return_date %}
+                                                        <br>{{ request.return_date.strftime('%d/%m/%Y') }}
+                                                    {% endif %}
+                                                </small>
+                                            {% elif request.status == 'rejected' %}
+                                                <small class="text-muted">
+                                                    <i class="fas fa-ban"></i> Đã từ chối
+                                                </small>
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -353,7 +372,20 @@
 
 <script>
 function updateRequestStatus(requestId, status) {
-    const message = status === 'approved' ? 'Bạn có chắc muốn duyệt yêu cầu này?' : 'Bạn có chắc muốn từ chối yêu cầu này?';
+    let message;
+    switch(status) {
+        case 'approved':
+            message = 'Bạn có chắc muốn duyệt yêu cầu này?';
+            break;
+        case 'rejected':
+            message = 'Bạn có chắc muốn từ chối yêu cầu này?';
+            break;
+        case 'returned':
+            message = 'Xác nhận user đã trả sách này?';
+            break;
+        default:
+            message = 'Bạn có chắc muốn thực hiện thao tác này?';
+    }
 
     document.getElementById('confirmMessage').textContent = message;
     document.getElementById('confirmBtn').onclick = function() {
@@ -396,14 +428,16 @@ setInterval(function() {
 // Hiệu ứng loading cho các nút
 document.querySelectorAll('.btn').forEach(button => {
     button.addEventListener('click', function() {
-        const originalText = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-        this.disabled = true;
+        if (this.onclick && this.onclick.toString().includes('updateRequestStatus')) {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            this.disabled = true;
 
-        setTimeout(() => {
-            this.innerHTML = originalText;
-            this.disabled = false;
-        }, 2000);
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }, 2000);
+        }
     });
 });
 </script>
