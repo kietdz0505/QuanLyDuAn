@@ -6,19 +6,26 @@
 <section class="py-5">
     <div class="container">
         <div class="row">
-            <!-- Ảnh sách nếu có -->
+            <!-- Ảnh sách -->
             <div class="col-md-4">
                 {% if book.image %}
-                    <img src="{{book.image}}" alt="{{ book.name }}" class="img-fluid rounded shadow">
+                    <img src="{{ book.image }}" alt="{{ book.name }}" class="img-fluid rounded shadow">
                 {% else %}
-                    <img src="{{ url_for('static', filename='images/default-book.png') }}" alt="No image" class="img-fluid rounded shadow">
+                    <img src="{{ url_for('static', filename='images/default-book.png') }}" alt="No image"
+                         class="img-fluid rounded shadow">
                 {% endif %}
             </div>
 
             <!-- Thông tin sách -->
             <div class="col-md-8">
                 <h2 class="mb-3">{{ book.name }}</h2>
-                <p><strong>Tác giả:</strong> {{ book.author.first_name }} {{ book.author.last_name if book.author else 'Không rõ' }}</p>
+                <p><strong>Tác giả:</strong> 
+                    {% if book.author %}
+                        {{ book.author.first_name }} {{ book.author.last_name }}
+                    {% else %}
+                        Không rõ
+                    {% endif %}
+                </p>
                 <p><strong>Thể loại:</strong> {{ book.category.name if book.category else 'Không rõ' }}</p>
                 <p><strong>Nhà xuất bản:</strong> {{ book.publisher.name if book.publisher else 'Không rõ' }}</p>
                 <p><strong>Số lượng còn lại:</strong> {{ book.quantity }}</p>
@@ -27,6 +34,7 @@
                 <p><strong>Mô tả:</strong></p>
                 <p>{{ book.description or 'Chưa có mô tả.' }}</p>
 
+                <!-- Xử lý mượn sách -->
                 {% if current_user.is_authenticated %}
                     {% if book.quantity > 0 %}
                         <form method="POST" action="{{ url_for('borrow_book', book_id=book.id) }}" class="mt-3">
@@ -40,7 +48,9 @@
                         </div>
                     {% endif %}
                 {% else %}
-                    <p class="text-muted mt-3">Vui lòng <a href="{{ url_for('login') }}">đăng nhập</a> để mượn sách.</p>
+                    <p class="text-muted mt-3">
+                        Vui lòng <a href="{{ url_for('login') }}">đăng nhập</a> để mượn sách.
+                    </p>
                 {% endif %}
             </div>
         </div>

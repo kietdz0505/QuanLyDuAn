@@ -16,10 +16,10 @@
         {% if borrows %}
             <div class="row">
                 <div class="col-12">
-                    <div class="card">
+                    <div class="card shadow-sm">
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-striped">
+                                <table class="table table-striped align-middle">
                                     <thead>
                                         <tr>
                                             <th>#</th>
@@ -39,34 +39,31 @@
                                                 <div class="d-flex align-items-center">
                                                     {% if borrow.book.image %}
                                                         <img src="{{ borrow.book.image }}" alt="{{ borrow.book.name }}" 
-                                                             class="me-2" style="width: 40px; height: 50px; object-fit: cover;">
+                                                             class="me-2 rounded" style="width: 40px; height: 50px; object-fit: cover;">
                                                     {% endif %}
                                                     <div>
-                                                        <strong>{{ borrow.book.name }}</strong>
-                                                        <br>
+                                                        <strong>{{ borrow.book.name }}</strong><br>
                                                         <small class="text-muted">{{ borrow.book.category.name }}</small>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ borrow.book.author.first_name }} {{ borrow.book.author.last_name }}</td>
+                                            <td>
+                                                {% if borrow.book.author %}
+                                                    {{ borrow.book.author.first_name }} {{ borrow.book.author.last_name }}
+                                                {% else %}
+                                                    Không rõ
+                                                {% endif %}
+                                            </td>
                                             <td>{{ borrow.request_date.strftime('%d/%m/%Y %H:%M') }}</td>
                                             <td>
                                                 {% if borrow.status == 'pending' %}
-                                                    <span class="badge bg-warning">
-                                                        <i class="fas fa-clock"></i> Đang chờ
-                                                    </span>
+                                                    <span class="badge bg-warning"><i class="fas fa-clock"></i> Đang chờ</span>
                                                 {% elif borrow.status == 'approved' %}
-                                                    <span class="badge bg-success">
-                                                        <i class="fas fa-check"></i> Đã duyệt
-                                                    </span>
+                                                    <span class="badge bg-success"><i class="fas fa-check"></i> Đã duyệt</span>
                                                 {% elif borrow.status == 'rejected' %}
-                                                    <span class="badge bg-danger">
-                                                        <i class="fas fa-times"></i> Từ chối
-                                                    </span>
+                                                    <span class="badge bg-danger"><i class="fas fa-times"></i> Từ chối</span>
                                                 {% elif borrow.status == 'returned' %}
-                                                    <span class="badge bg-info">
-                                                        <i class="fas fa-undo"></i> Đã trả
-                                                    </span>
+                                                    <span class="badge bg-info"><i class="fas fa-undo"></i> Đã trả</span>
                                                 {% endif %}
                                             </td>
                                             <td>
@@ -83,6 +80,12 @@
                                                    class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-eye"></i> Xem chi tiết
                                                 </a>
+                                                {% if borrow.status == 'pending' %}
+                                                    <button class="btn btn-sm btn-danger cancel-borrow"
+                                                            data-request-id="{{ borrow.id }}">
+                                                        <i class="fas fa-times"></i> Hủy yêu cầu
+                                                    </button>
+                                                {% endif %}
                                                 {% if borrow.status == 'approved' %}
                                                     <small class="text-info d-block mt-1">
                                                         <i class="fas fa-info-circle"></i> Mang sách đến quầy để trả
@@ -154,11 +157,34 @@
 
 {% block scripts %}
 <script>
-// Tự động refresh trang mỗi 30 giây để cập nhật trạng thái
+document.querySelectorAll('.cancel-borrow').forEach(button => {
+    button.addEventListener('click', function() {
+        const requestId = this.getAttribute('data-request-id');
+        if (confirm('Bạn có chắc muốn hủy yêu cầu mượn sách này?')) {
+            fetch(`/cancel-borrow/${requestId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi hủy yêu cầu!');
+            });
+        }
+    });
+});
+
+// Tự động refresh trang mỗi 30 giây nếu có yêu cầu pending
 setInterval(function() {
-    // Chỉ reload nếu có yêu cầu pending
-    const pendingBadges = document.querySelectorAll('.badge.bg-warning');
-    if (pendingBadges.length > 0) {
+    if (document.querySelectorAll('.badge.bg-warning').length > 0) {
         location.reload();
     }
 }, 30000);
