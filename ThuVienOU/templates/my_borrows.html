@@ -1,63 +1,161 @@
 {% extends "base.html" %}
 
-{% block title %}Sách đã mượn{% endblock %}
+{% block title %}Sách đã mượn - Thư viện{% endblock %}
 
 {% block content %}
 <section class="py-5">
     <div class="container">
-        <h2>Lịch sử mượn sách</h2>
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-4">
+                    <i class="fas fa-book-reader"></i> Lịch sử mượn sách
+                </h2>
+            </div>
+        </div>
+
         {% if borrows %}
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Tên sách</th>
-                        <th>Ngày yêu cầu</th>
-                        <th>Trạng thái</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for borrow in borrows %}
-                        <tr>
-                            <td>{{ borrow.book.name }}</td>
-                            <td>{{ borrow.request_date.strftime('%d/%m/%Y') }}</td>
-                            <td>
-                                {% if borrow.status == 'pending' %}
-                                    <span class="badge bg-warning">Đang chờ</span>
-                                {% elif borrow.status == 'approved' %}
-                                    <span class="badge bg-success">Đã duyệt</span>
-                                {% elif borrow.status == 'rejected' %}
-                                    <span class="badge bg-danger">Bị từ chối</span>
-                                {% else %}
-                                    {{ borrow.status }}
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="d-flex gap-2">
-                                    {% if borrow.status != 'pending' %}
-                                        <form action="{{ url_for('borrow_book', book_id=borrow.book.id) }}" method="POST">
-                                            <button type="submit" class="btn btn-success btn-sm">
-                                                <i class="fas fa-book-reader"></i> Mượn lại
-                                            </button>
-                                        </form>
-                                    {% endif %}
-                                    <button class="btn btn-danger btn-sm cancel-borrow"
-                                            data-request-id="{{ borrow.id }}"
-                                            {% if borrow.status == 'approved' %}disabled{% endif %}>
-                                        <i class="fas fa-trash"></i> Hủy
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Tên sách</th>
+                                            <th>Tác giả</th>
+                                            <th>Ngày yêu cầu</th>
+                                            <th>Trạng thái</th>
+                                            <th>Ngày trả dự kiến</th>
+                                            <th>Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for borrow in borrows %}
+                                        <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if borrow.book.image %}
+                                                        <img src="{{ borrow.book.image }}" alt="{{ borrow.book.name }}" 
+                                                             class="me-2 rounded" style="width: 40px; height: 50px; object-fit: cover;">
+                                                    {% endif %}
+                                                    <div>
+                                                        <strong>{{ borrow.book.name }}</strong><br>
+                                                        <small class="text-muted">{{ borrow.book.category.name }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if borrow.book.author %}
+                                                    {{ borrow.book.author.first_name }} {{ borrow.book.author.last_name }}
+                                                {% else %}
+                                                    Không rõ
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ borrow.request_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                                            <td>
+                                                {% if borrow.status == 'pending' %}
+                                                    <span class="badge bg-warning"><i class="fas fa-clock"></i> Đang chờ</span>
+                                                {% elif borrow.status == 'approved' %}
+                                                    <span class="badge bg-success"><i class="fas fa-check"></i> Đã duyệt</span>
+                                                {% elif borrow.status == 'rejected' %}
+                                                    <span class="badge bg-danger"><i class="fas fa-times"></i> Từ chối</span>
+                                                {% elif borrow.status == 'returned' %}
+                                                    <span class="badge bg-info"><i class="fas fa-undo"></i> Đã trả</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if borrow.status == 'approved' and borrow.return_date %}
+                                                    {{ borrow.return_date.strftime('%d/%m/%Y') }}
+                                                {% elif borrow.status == 'approved' %}
+                                                    <small class="text-muted">Chưa xác định</small>
+                                                {% else %}
+                                                    <small class="text-muted">-</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('book_detail', book_id=borrow.book.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> Xem chi tiết
+                                                </a>
+                                                {% if borrow.status == 'pending' %}
+                                                    <button class="btn btn-sm btn-danger cancel-borrow"
+                                                            data-request-id="{{ borrow.id }}">
+                                                        <i class="fas fa-times"></i> Hủy yêu cầu
+                                                    </button>
+                                                {% endif %}
+                                                {% if borrow.status == 'approved' %}
+                                                    <small class="text-info d-block mt-1">
+                                                        <i class="fas fa-info-circle"></i> Mang sách đến quầy để trả
+                                                    </small>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thống kê -->
+            <div class="row mt-4">
+                <div class="col-md-3">
+                    <div class="card text-center bg-primary text-white">
+                        <div class="card-body">
+                            <i class="fas fa-book fa-2x mb-2"></i>
+                            <h4>{{ borrows|selectattr("status", "equalto", "approved")|list|length }}</h4>
+                            <p>Đang mượn</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-warning text-white">
+                        <div class="card-body">
+                            <i class="fas fa-clock fa-2x mb-2"></i>
+                            <h4>{{ borrows|selectattr("status", "equalto", "pending")|list|length }}</h4>
+                            <p>Chờ duyệt</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-success text-white">
+                        <div class="card-body">
+                            <i class="fas fa-check fa-2x mb-2"></i>
+                            <h4>{{ borrows|selectattr("status", "equalto", "returned")|list|length }}</h4>
+                            <p>Đã trả</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-danger text-white">
+                        <div class="card-body">
+                            <i class="fas fa-times fa-2x mb-2"></i>
+                            <h4>{{ borrows|selectattr("status", "equalto", "rejected")|list|length }}</h4>
+                            <p>Từ chối</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% else %}
-            <p class="text-muted">Bạn chưa có yêu cầu mượn sách nào.</p>
+            <div class="text-center py-5">
+                <i class="fas fa-book-open fa-5x text-muted mb-3"></i>
+                <h4>Chưa có lịch sử mượn sách</h4>
+                <p class="text-muted mb-4">Bạn chưa mượn cuốn sách nào. Hãy khám phá thư viện và tìm những cuốn sách yêu thích!</p>
+                <a href="{{ url_for('search') }}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tìm kiếm sách
+                </a>
+            </div>
         {% endif %}
     </div>
 </section>
+{% endblock %}
 
+{% block scripts %}
 <script>
 document.querySelectorAll('.cancel-borrow').forEach(button => {
     button.addEventListener('click', function() {
@@ -65,15 +163,13 @@ document.querySelectorAll('.cancel-borrow').forEach(button => {
         if (confirm('Bạn có chắc muốn hủy yêu cầu mượn sách này?')) {
             fetch(`/cancel-borrow/${requestId}`, {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Content-Type': 'application/json' }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    window.location.reload(); // Tải lại trang để cập nhật danh sách
+                    window.location.reload();
                 } else {
                     alert(data.message);
                 }
@@ -85,5 +181,12 @@ document.querySelectorAll('.cancel-borrow').forEach(button => {
         }
     });
 });
+
+// Tự động refresh trang mỗi 30 giây nếu có yêu cầu pending
+setInterval(function() {
+    if (document.querySelectorAll('.badge.bg-warning').length > 0) {
+        location.reload();
+    }
+}, 30000);
 </script>
 {% endblock %}
