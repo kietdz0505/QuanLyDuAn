@@ -102,7 +102,7 @@ def logout():
 
 
 # --- Register + OTP ---
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['POST'])
 def register():
     if request.method == 'POST':
         name, username, password, email = (
@@ -273,8 +273,8 @@ def my_borrows():
 @login_required
 def cancel_borrow(request_id):
     borrow_request = BorrowRequest.query.get_or_404(request_id)
-    if borrow_request.user_id != current_user.id:
-        return jsonify({'success': False, 'message': 'Bạn không có quyền hủy yêu cầu này!'}), 403
+    # if borrow_request.user_id != current_user.id:
+    #     return jsonify({'success': False, 'message': 'Bạn không có quyền hủy yêu cầu này!'}), 403
     if borrow_request.status == 'approved':
         return jsonify({'success': False, 'message': 'Không thể hủy yêu cầu đã được duyệt!'}), 400
 
